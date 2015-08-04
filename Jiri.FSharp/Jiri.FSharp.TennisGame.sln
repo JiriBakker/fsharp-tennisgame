@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Jiri.FSharp.TennisGame", "Jiri.FSharp.TennisGame\Jiri.FSharp.TennisGame.fsproj", "{1EEC69E4-A75B-45C7-B60B-9FD743043B3C}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Jiri.FSharp.TennisGame.UnitTests", "Jiri.FSharp.TennisGame.UnitTests\Jiri.FSharp.TennisGame.UnitTests.fsproj", "{FDFA5054-3012-4B57-98F2-B1D63485428E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1EEC69E4-A75B-45C7-B60B-9FD743043B3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EEC69E4-A75B-45C7-B60B-9FD743043B3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EEC69E4-A75B-45C7-B60B-9FD743043B3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EEC69E4-A75B-45C7-B60B-9FD743043B3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDFA5054-3012-4B57-98F2-B1D63485428E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDFA5054-3012-4B57-98F2-B1D63485428E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDFA5054-3012-4B57-98F2-B1D63485428E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDFA5054-3012-4B57-98F2-B1D63485428E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
