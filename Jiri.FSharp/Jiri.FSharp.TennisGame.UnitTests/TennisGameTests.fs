@@ -128,7 +128,7 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.ScoreInGameOneAtDueceGivesAdvantage () =
-        let tennisGame = getDueceGame()
+        let tennisGame = getDeuceGame()
 
         tennisGame |> scorePointsFor Player1 1
 
@@ -142,7 +142,7 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.ScoreInGameTwoAtDueceGivesAdvantage () =
-        let tennisGame = getDueceGame()
+        let tennisGame = getDeuceGame()
 
         tennisGame |> scorePointsFor Player2 1
 
@@ -156,7 +156,7 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.ScoreInGameOneWhenPlayerTwoHasAdvantageGivesDuece () =
-        let tennisGame = getDueceGame()
+        let tennisGame = getDeuceGame()
         
         tennisGame |> scorePointsFor Player2 1
         tennisGame |> scorePointsFor Player1 1
@@ -171,7 +171,7 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.ScoreInGameOneAtAdvantageStartsNewGame () =
-        let tennisGame = getDueceGame()
+        let tennisGame = getDeuceGame()
         
         tennisGame |> scorePointsFor Player1 1
         tennisGame |> scorePointsFor Player1 1
