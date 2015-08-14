@@ -27,7 +27,6 @@ type Set = { Games: Map<Player,int> }
     
 type GameState = { Sets: Set list; CurrentGame: Map<Player,Score> }
 
-
 module TennisGame = 
 
     let private startNewGame =
@@ -66,7 +65,7 @@ module TennisGame =
         | Some(player) -> { Sets = [startNewSet;updatedSet] @ previousSets; CurrentGame = startNewGame }
         | None         -> { Sets = [updatedSet]             @ previousSets; CurrentGame = startNewGame }  
 
-    let private incrementScoreInNormalGame player gameState =
+    let scorePointFor player gameState =
         let pointsInCurrentGame = gameState.CurrentGame
         let otherPlayer         = getOtherPlayer player
         let scoreForPlayer      = pointsInCurrentGame.[player]
@@ -102,8 +101,4 @@ module TennisGame =
             { Sets = gameState.Sets; CurrentGame = (Seq.asMap [(player,scorePlayer);(otherPlayer,scoreOtherPlayer)]) }
 
     let startNewTennisGame =
-        { Sets = [startNewSet]; CurrentGame = startNewGame }    
-  
- 
-    let scorePointFor player gameState =
-        incrementScoreInNormalGame player gameState
+        { Sets = [startNewSet]; CurrentGame = startNewGame }      
