@@ -109,11 +109,11 @@ type TennnisGameTests() =
 
         tennisGame.CurrentScore
         |> scoreInGame player1
-        |> should equal Duece
+        |> should equal Deuce
 
         tennisGame.CurrentScore
         |> scoreInGame player2
-        |> should equal Duece
+        |> should equal Deuce
 
     [<Test>]
     member this.ScoreInGameOneAtDueceGivesAdvantage () =
@@ -152,11 +152,11 @@ type TennnisGameTests() =
 
         tennisGame.CurrentScore
         |> scoreInGame player1
-        |> should equal Duece
+        |> should equal Deuce
 
         tennisGame.CurrentScore
         |> scoreInGame player2
-        |> should equal Duece
+        |> should equal Deuce
 
     [<Test>]
     member this.ScoreInGameOneAtAdvantageStartsNewGame () =
