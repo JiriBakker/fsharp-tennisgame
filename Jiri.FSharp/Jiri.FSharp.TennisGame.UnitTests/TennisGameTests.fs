@@ -33,7 +33,7 @@ type TennnisGameTests() =
         for i = 1 to games do
             winGame player tennisGame
 
-    let getDueceGame() =
+    let getDeuceGame() =
         let tennisGame = startTennisGame()
         tennisGame |> scorePointsFor Player1 3
         tennisGame |> scorePointsFor Player2 3        
