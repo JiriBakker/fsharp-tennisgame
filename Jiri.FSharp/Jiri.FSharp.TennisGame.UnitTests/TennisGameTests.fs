@@ -6,39 +6,51 @@ open Jiri.FSharp.TennisGame
 
 [<TestFixture>]
 type TennnisGameTests() = 
-
     
     let startTennisGame() =
-        new TennisGame()
+        TennisGame.startNewTennisGame
 
-    let scoreInCurrentGameFor player (tennisGame:TennisGame) =
-        tennisGame.GameState.CurrentGame.[player]
+    let scoreInCurrentGameFor player (tennisGame:GameState) =
+        tennisGame.CurrentGame.[player]
 
-    let gamesWonInSet player (tennisGame:TennisGame) =
-        tennisGame.GameState.Sets.Head.Games.[player]
+    let gamesWonInSet player (tennisGame:GameState) =
+        tennisGame.Sets.Head.Games.[player]
 
-    let setsWon player (tennisGame:TennisGame) =
-        tennisGame.GameState.Sets
+    let setsWon player (tennisGame:GameState) =
+        tennisGame.Sets
         |> Seq.filter (fun (set) -> match set.Winner with | None -> false | Some(p) -> p.Key = player)
         |> Seq.length
        
-    let scorePointsFor player points (tennisGame:TennisGame) =
-        for i = 1 to points do
-            tennisGame.ScorePointFor player       
+    let rec scorePointsFor player points (tennisGame:GameState) =
+        if points = 0 then tennisGame
+        else 
+            tennisGame
+            |> TennisGame.scorePointFor player 
+            |> scorePointsFor player (points - 1)
 
     let winGame player tennisGame =
-        scorePointsFor player 4 tennisGame
+        tennisGame
+        |> scorePointsFor player 4 
 
-    let winGames player games tennisGame =
-        for i = 1 to games do
-            winGame player tennisGame
+    let rec winGames player games tennisGame =
+        if games = 0 then tennisGame
+        else 
+            tennisGame
+            |> winGame player 
+            |> winGames player (games - 1)        
 
     let getDeuceGame() =
-        let tennisGame = startTennisGame()
-        tennisGame |> scorePointsFor Player1 3
-        tennisGame |> scorePointsFor Player2 3        
-        tennisGame   
+        startTennisGame() 
+        |> scorePointsFor Player1 3
+        |> scorePointsFor Player2 3                
 
+    let rec winGamesForBothPlayers games (tennisGame:GameState) =
+        if games = 0 then tennisGame
+        else
+            tennisGame
+            |> winGame Player1
+            |> winGame Player2
+            |> winGamesForBothPlayers (games - 1)
 
     [<Test>]
     member this.InNewGameBothPlayersHaveNoPointsInGame () =
@@ -54,19 +66,19 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.FirstPointscoreInGameOneShouldGiveScore15 () =
-        let tennisGame = startTennisGame()
-        
-        tennisGame |> scorePointsFor Player1 1 |> ignore
-        
+        let tennisGame = 
+            startTennisGame()
+            |> scorePointsFor Player1 1 
+
         tennisGame
         |> scoreInCurrentGameFor Player1
         |> should equal Fifteen
 
     [<Test>]
     member this.TwoPointsscoreInGameOneShouldGiveScore30 () =
-        let tennisGame = startTennisGame()
-        
-        tennisGame |> scorePointsFor Player1 2
+        let tennisGame = 
+            startTennisGame() 
+            |> scorePointsFor Player1 2
 
         tennisGame
         |> scoreInCurrentGameFor Player1
@@ -74,9 +86,9 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.ThreePointsscoreInGameOneShouldGiveScore40 () =
-        let tennisGame = startTennisGame()
-        
-        tennisGame |> scorePointsFor Player1 3
+        let tennisGame = 
+            startTennisGame() 
+            |> scorePointsFor Player1 3
 
         tennisGame
         |> scoreInCurrentGameFor Player1
@@ -84,9 +96,9 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.FourPointsscoreInGameOneShouldStartsNewGame () =
-        let tennisGame = startTennisGame()
-        
-        tennisGame |> scorePointsFor Player1 4        
+        let tennisGame = 
+            startTennisGame() 
+            |> scorePointsFor Player1 4        
 
         tennisGame
         |> scoreInCurrentGameFor Player1
@@ -98,10 +110,10 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.TwoPointsForPlayer1And1PointForPlayer2ShouldGiveScoreThirtyFifteen () =
-        let tennisGame = startTennisGame()
-        
-        tennisGame |> scorePointsFor Player1 2        
-        tennisGame |> scorePointsFor Player2 1        
+        let tennisGame = 
+            startTennisGame() 
+            |> scorePointsFor Player1 2        
+            |> scorePointsFor Player2 1        
 
         tennisGame
         |> scoreInCurrentGameFor Player1
@@ -113,10 +125,10 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.ThreePointsForBothPlayersShouldGiveScoreDuece () =
-        let tennisGame = startTennisGame()
-        
-        tennisGame |> scorePointsFor Player1 3        
-        tennisGame |> scorePointsFor Player2 3        
+        let tennisGame = 
+            startTennisGame()        
+            |> scorePointsFor Player1 3        
+            |> scorePointsFor Player2 3        
 
         tennisGame
         |> scoreInCurrentGameFor Player1
@@ -128,9 +140,9 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.ScoreInGameOneAtDueceGivesAdvantage () =
-        let tennisGame = getDeuceGame()
-
-        tennisGame |> scorePointsFor Player1 1
+        let tennisGame = 
+            getDeuceGame()
+            |> scorePointsFor Player1 1
 
         tennisGame
         |> scoreInCurrentGameFor Player1
@@ -142,9 +154,9 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.ScoreInGameTwoAtDueceGivesAdvantage () =
-        let tennisGame = getDeuceGame()
-
-        tennisGame |> scorePointsFor Player2 1
+        let tennisGame = 
+            getDeuceGame()
+            |> scorePointsFor Player2 1
 
         tennisGame
         |> scoreInCurrentGameFor Player1
@@ -156,10 +168,10 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.ScoreInGameOneWhenPlayerTwoHasAdvantageGivesDuece () =
-        let tennisGame = getDeuceGame()
-        
-        tennisGame |> scorePointsFor Player2 1
-        tennisGame |> scorePointsFor Player1 1
+        let tennisGame = 
+            getDeuceGame()        
+            |> scorePointsFor Player2 1
+            |> scorePointsFor Player1 1
 
         tennisGame
         |> scoreInCurrentGameFor Player1
@@ -171,10 +183,10 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.ScoreInGameOneAtAdvantageStartsNewGame () =
-        let tennisGame = getDeuceGame()
-        
-        tennisGame |> scorePointsFor Player1 1
-        tennisGame |> scorePointsFor Player1 1
+        let tennisGame = 
+            getDeuceGame()        
+            |> scorePointsFor Player1 1
+            |> scorePointsFor Player1 1
 
         tennisGame
         |> scoreInCurrentGameFor Player1
@@ -199,9 +211,9 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.ScoreFourPointsInGameScoresGameInSet () =
-        let tennisGame = startTennisGame()
-        
-        tennisGame |> scorePointsFor Player1 4
+        let tennisGame = 
+            startTennisGame()
+            |> scorePointsFor Player1 4
 
         tennisGame
         |> gamesWonInSet Player1
@@ -213,10 +225,10 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.WinTwoGamesScoresTwogamesWonInSet () =
-        let tennisGame = startTennisGame()
-        
-        tennisGame |> winGames Player1 1
-        tennisGame |> winGames Player1 1
+        let tennisGame =         
+            startTennisGame() 
+            |> winGames Player1 1
+            |> winGames Player1 1
 
         tennisGame
         |> gamesWonInSet Player1
@@ -224,9 +236,9 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.WinSixGamesScoresSetWon () =
-        let tennisGame = startTennisGame()
-        
-        tennisGame |> winGames Player1 6
+        let tennisGame =         
+            startTennisGame() 
+            |> winGames Player1 6
 
         tennisGame
         |> setsWon Player1
@@ -234,10 +246,10 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.WinSixthGameWhenOpponentHasFiveGamesDoesNotEndSet () =
-        let tennisGame = startTennisGame()
-        
-        tennisGame |> winGames Player2 5
-        tennisGame |> winGames Player1 6
+        let tennisGame = 
+            startTennisGame()        
+            |> winGames Player2 5
+            |> winGames Player1 6
 
         tennisGame
         |> setsWon Player1
@@ -245,10 +257,10 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.WinSeventhGameWhenOpponentHasFiveGamesWinsSet () =
-        let tennisGame = startTennisGame()
-        
-        tennisGame |> winGames Player2 5
-        tennisGame |> winGames Player1 7
+        let tennisGame = 
+            startTennisGame()
+            |> winGames Player2 5
+            |> winGames Player1 7
 
         tennisGame
         |> setsWon Player1
@@ -256,14 +268,11 @@ type TennnisGameTests() =
 
     [<Test>]
     member this.SetContinuesWhileDifferenceInGamesIsNot2 () =
-        let tennisGame = startTennisGame()
-        
-        tennisGame |> winGames Player2 5
-        tennisGame |> winGames Player1 5
-
-        for i = 1 to 10 do
-            tennisGame |> winGames Player1 1
-            tennisGame |> winGames Player2 1
+        let tennisGame = 
+            startTennisGame()        
+            |> winGames Player2 5
+            |> winGames Player1 5
+            |> winGamesForBothPlayers 10
 
         tennisGame
         |> setsWon Player1
