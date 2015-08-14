@@ -109,5 +109,5 @@ type TennisGame() =
         gameState <-
             scorePointFor player gameState            
 
-    member this.CurrentScore =
+    member this.GameState =
         gameState

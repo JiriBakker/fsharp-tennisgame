@@ -11,14 +11,14 @@ type TennnisGameTests() =
     let startTennisGame() =
         new TennisGame()
 
-    let scoreInGame player gameState =
-        gameState.CurrentGame.[player]
+    let scoreInCurrentGameFor player (tennisGame:TennisGame) =
+        tennisGame.GameState.CurrentGame.[player]
 
-    let gamesWonInSet player gameState =
-        gameState.Sets.Head.Games.[player]
+    let gamesWonInSet player (tennisGame:TennisGame) =
+        tennisGame.GameState.Sets.Head.Games.[player]
 
-    let setsWon player gameState =
-        gameState.Sets
+    let setsWon player (tennisGame:TennisGame) =
+        tennisGame.GameState.Sets
         |> Seq.filter (fun (set) -> match set.Winner with | None -> false | Some(p) -> p.Key = player)
         |> Seq.length
        
@@ -44,12 +44,12 @@ type TennnisGameTests() =
     member this.InNewGameBothPlayersHaveNoPointsInGame () =
         let tennisGame = startTennisGame()
         
-        tennisGame.CurrentScore
-        |> scoreInGame Player1
+        tennisGame
+        |> scoreInCurrentGameFor Player1
         |> should equal Zero
         
-        tennisGame.CurrentScore
-        |> scoreInGame Player2
+        tennisGame
+        |> scoreInCurrentGameFor Player2
         |> should equal Zero
 
     [<Test>]
@@ -58,8 +58,8 @@ type TennnisGameTests() =
         
         tennisGame |> scorePointsFor Player1 1 |> ignore
         
-        tennisGame.CurrentScore
-        |> scoreInGame Player1
+        tennisGame
+        |> scoreInCurrentGameFor Player1
         |> should equal Fifteen
 
     [<Test>]
@@ -68,8 +68,8 @@ type TennnisGameTests() =
         
         tennisGame |> scorePointsFor Player1 2
 
-        tennisGame.CurrentScore
-        |> scoreInGame Player1
+        tennisGame
+        |> scoreInCurrentGameFor Player1
         |> should equal Thirty
 
     [<Test>]
@@ -78,8 +78,8 @@ type TennnisGameTests() =
         
         tennisGame |> scorePointsFor Player1 3
 
-        tennisGame.CurrentScore
-        |> scoreInGame Player1
+        tennisGame
+        |> scoreInCurrentGameFor Player1
         |> should equal Forty
 
     [<Test>]
@@ -88,13 +88,28 @@ type TennnisGameTests() =
         
         tennisGame |> scorePointsFor Player1 4        
 
-        tennisGame.CurrentScore
-        |> scoreInGame Player1
+        tennisGame
+        |> scoreInCurrentGameFor Player1
         |> should equal Zero
 
-        tennisGame.CurrentScore
-        |> scoreInGame Player2
+        tennisGame
+        |> scoreInCurrentGameFor Player2
         |> should equal Zero
+
+    [<Test>]
+    member this.TwoPointsForPlayer1And1PointForPlayer2ShouldGiveScoreThirtyFifteen () =
+        let tennisGame = startTennisGame()
+        
+        tennisGame |> scorePointsFor Player1 2        
+        tennisGame |> scorePointsFor Player2 1        
+
+        tennisGame
+        |> scoreInCurrentGameFor Player1
+        |> should equal Thirty
+
+        tennisGame
+        |> scoreInCurrentGameFor Player2
+        |> should equal Fifteen
 
     [<Test>]
     member this.ThreePointsForBothPlayersShouldGiveScoreDuece () =
@@ -103,12 +118,12 @@ type TennnisGameTests() =
         tennisGame |> scorePointsFor Player1 3        
         tennisGame |> scorePointsFor Player2 3        
 
-        tennisGame.CurrentScore
-        |> scoreInGame Player1
+        tennisGame
+        |> scoreInCurrentGameFor Player1
         |> should equal Deuce
 
-        tennisGame.CurrentScore
-        |> scoreInGame Player2
+        tennisGame
+        |> scoreInCurrentGameFor Player2
         |> should equal Deuce
 
     [<Test>]
@@ -117,12 +132,12 @@ type TennnisGameTests() =
 
         tennisGame |> scorePointsFor Player1 1
 
-        tennisGame.CurrentScore
-        |> scoreInGame Player1
+        tennisGame
+        |> scoreInCurrentGameFor Player1
         |> should equal Advantage
 
-        tennisGame.CurrentScore
-        |> scoreInGame Player2
+        tennisGame
+        |> scoreInCurrentGameFor Player2
         |> should equal Forty
 
     [<Test>]
@@ -131,12 +146,12 @@ type TennnisGameTests() =
 
         tennisGame |> scorePointsFor Player2 1
 
-        tennisGame.CurrentScore
-        |> scoreInGame Player1
+        tennisGame
+        |> scoreInCurrentGameFor Player1
         |> should equal Forty
 
-        tennisGame.CurrentScore
-        |> scoreInGame Player2
+        tennisGame
+        |> scoreInCurrentGameFor Player2
         |> should equal Advantage
 
     [<Test>]
@@ -146,12 +161,12 @@ type TennnisGameTests() =
         tennisGame |> scorePointsFor Player2 1
         tennisGame |> scorePointsFor Player1 1
 
-        tennisGame.CurrentScore
-        |> scoreInGame Player1
+        tennisGame
+        |> scoreInCurrentGameFor Player1
         |> should equal Deuce
 
-        tennisGame.CurrentScore
-        |> scoreInGame Player2
+        tennisGame
+        |> scoreInCurrentGameFor Player2
         |> should equal Deuce
 
     [<Test>]
@@ -161,23 +176,23 @@ type TennnisGameTests() =
         tennisGame |> scorePointsFor Player1 1
         tennisGame |> scorePointsFor Player1 1
 
-        tennisGame.CurrentScore
-        |> scoreInGame Player1
+        tennisGame
+        |> scoreInCurrentGameFor Player1
         |> should equal Zero
 
-        tennisGame.CurrentScore
-        |> scoreInGame Player2
+        tennisGame
+        |> scoreInCurrentGameFor Player2
         |> should equal Zero
 
     [<Test>]
     member this.InNewGameBothPlayersHaveNogamesWonInSet () =
         let tennisGame = startTennisGame()
         
-        tennisGame.CurrentScore
+        tennisGame
         |> gamesWonInSet Player1
         |> should equal 0
         
-        tennisGame.CurrentScore
+        tennisGame
         |> gamesWonInSet Player2
         |> should equal 0
 
@@ -188,11 +203,11 @@ type TennnisGameTests() =
         
         tennisGame |> scorePointsFor Player1 4
 
-        tennisGame.CurrentScore
+        tennisGame
         |> gamesWonInSet Player1
         |> should equal 1
 
-        tennisGame.CurrentScore
+        tennisGame
         |> gamesWonInSet Player2
         |> should equal 0
 
@@ -203,7 +218,7 @@ type TennnisGameTests() =
         tennisGame |> winGames Player1 1
         tennisGame |> winGames Player1 1
 
-        tennisGame.CurrentScore
+        tennisGame
         |> gamesWonInSet Player1
         |> should equal 2
 
@@ -213,7 +228,7 @@ type TennnisGameTests() =
         
         tennisGame |> winGames Player1 6
 
-        tennisGame.CurrentScore
+        tennisGame
         |> setsWon Player1
         |> should equal 1
 
@@ -224,7 +239,7 @@ type TennnisGameTests() =
         tennisGame |> winGames Player2 5
         tennisGame |> winGames Player1 6
 
-        tennisGame.CurrentScore
+        tennisGame
         |> setsWon Player1
         |> should equal 0
 
@@ -235,7 +250,7 @@ type TennnisGameTests() =
         tennisGame |> winGames Player2 5
         tennisGame |> winGames Player1 7
 
-        tennisGame.CurrentScore
+        tennisGame
         |> setsWon Player1
         |> should equal 1
 
@@ -250,6 +265,6 @@ type TennnisGameTests() =
             tennisGame |> winGames Player1 1
             tennisGame |> winGames Player2 1
 
-        tennisGame.CurrentScore
+        tennisGame
         |> setsWon Player1
         |> should equal 0        
