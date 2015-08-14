@@ -5,50 +5,37 @@ module Seq =
     let asMap (sequence:seq<'a * 'b>) =
         sequence |> Map.ofSeq
 
-type Player(name) = 
-    member this.Name = name
-
-    override this.Equals(otherObj) =
-        match otherObj with
-        | :? Player as y -> (this.Name = y.Name)
-        | _ -> false
- 
-    override this.GetHashCode() = hash this.Name
-    interface System.IComparable with
-        member this.CompareTo otherObj =
-            match otherObj with
-            | :? Player as y -> compare this.Name y.Name
-            | _ -> invalidArg "yobj" "cannot compare values of different types"
+type Player = Player1 | Player2
     
-type Score = Zero | Fifteen | Thirty | Forty | Duece | Advantage
+type Score = Zero | Fifteen | Thirty | Forty | Deuce | Advantage
 
 type Set = { Games: Map<Player,int> }
     with member this.Winner =
-            let player1 = Seq.head this.Games
-            let player2 = Seq.head (Seq.tail this.Games)
+            let Player1 = Seq.head this.Games
+            let Player2 = Seq.head (Seq.tail this.Games)
         
-            match player1.Value,player2.Value with
-            | a,b when a >= 6 && a-b >= 2 -> Some(player1)
-            | a,b when b >= 6 && b-a >= 2 -> Some(player2)
+            match Player1.Value,Player2.Value with
+            | a,b when a >= 6 && a-b >= 2 -> Some(Player1)
+            | a,b when b >= 6 && b-a >= 2 -> Some(Player2)
             // TODO tie-breaks?
-            // | 7,6 -> Some(player1) 
-            // | 6,7 -> Some(player2)
+            // | 7,6 -> Some(Player1) 
+            // | 6,7 -> Some(Player2)
             | _,_ -> None
     
 type GameState = { Sets: Set list; CurrentGame: Map<Player,Score> }
 
-type TennisGame(player1:Player, player2:Player) = 
+type TennisGame() = 
 
     let startNewGame =
-        Seq.asMap [(player1, Zero); (player2, Zero)]    
+        Seq.asMap [(Player1, Zero); (Player2, Zero)]    
 
     let startNewSet =
-        { Games = Seq.asMap [(player1,0);(player2,0)] }
+        { Games = Seq.asMap [(Player1, 0);(Player2, 0)] }
 
     let getOtherPlayer (player:Player) =        
         match player with
-        | _ when player1.Name = player.Name -> player2
-        | _                                 -> player1 
+        | Player1 -> Player2
+        | Player2 -> Player1
 
     let getCurrentSet gameState = 
         gameState.Sets.Head
@@ -90,17 +77,17 @@ type TennisGame(player1:Player, player2:Player) =
                         | Zero
                         | Fifteen
                         | Thirty -> Forty,otherScore,None
-                        | Forty  -> Duece,Duece,None
+                        | Forty  -> Deuce,Deuce,None
                         | _      -> invalidOp "Unexpected game state"
                 | Forty,otherScore ->
                     match otherScore with
                         | Zero
                         | Fifteen
                         | Thirty    -> Forty,otherScore,Some(player)
-                        | Advantage -> Duece,Duece,None
+                        | Advantage -> Deuce,Deuce,None
                         | _         -> invalidOp "Unexpected game state"
-                | Duece,Duece     -> Advantage,Forty,None
-                | Duece,_         -> invalidOp "Unexpected game state"
+                | Deuce,Deuce     -> Advantage,Forty,None
+                | Deuce,_         -> invalidOp "Unexpected game state"
                 | Advantage,Forty -> Advantage,Forty,Some(player)
                 | _,_             -> invalidOp "Unexpected game state"
 
