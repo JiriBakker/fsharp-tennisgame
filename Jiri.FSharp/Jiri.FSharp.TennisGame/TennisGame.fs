@@ -1,23 +1,16 @@
 ﻿namespace Jiri.FSharp.TennisGame
-open System.Collections.Generic
-
-module Seq =
-    let asMap (sequence:seq<'a * 'b>) =
-        sequence |> Map.ofSeq
 
 type Player = Player1 | Player2
-    
-type Score = Zero | Fifteen | Thirty | Forty | Deuce | Advantage
     with override this.ToString() =
-            match this with | Zero -> "0" | Fifteen -> "15" | Thirty -> "30" | Forty -> "40" | Deuce -> "D" | Advantage -> "A"
+            sprintf "%A" this
+    
+type ScoreInGame = ZeroZero | FifteenZero | ThirtyZero | FortyZero | ZeroFifteen | FifteenFifteen | ThirtyFifteen | FortyFifteen | ZeroThirty | FifteenThirty | ThirtyThirty | FortyThirty | ZeroForty | FifteenForty | ThirtyForty | Deuce | AdvantagePlayer1 | AdvantagePlayer2
+    with override this.ToString() =
+            sprintf "%A" this
 
-
-type Set = { Games: Map<Player,int> }
+type Set = { GamesWonPlayer1:int; GamesWonPlayer2:int }
     with member this.Winner =
-            let Player1 = Seq.head this.Games
-            let Player2 = Seq.head (Seq.tail this.Games)
-        
-            match Player1.Value,Player2.Value with
+            match this.GamesWonPlayer1,this.GamesWonPlayer2 with
             | a,b when a >= 6 && a-b >= 2 -> Some(Player1)
             | a,b when b >= 6 && b-a >= 2 -> Some(Player2)
             // TODO tie-breaks?
@@ -25,20 +18,12 @@ type Set = { Games: Map<Player,int> }
             // | 6,7 -> Some(Player2)
             | _,_ -> None
     
-type GameState = { Sets: Set list; CurrentGame: Map<Player,Score> }
+type GameState = { Sets: Set list; CurrentGame: ScoreInGame }
 
 module TennisGame = 
 
-    let private startNewGame =
-        Seq.asMap [(Player1, Zero); (Player2, Zero)]    
-
     let private startNewSet =
-        { Games = Seq.asMap [(Player1, 0);(Player2, 0)] }
-
-    let private getOtherPlayer (player:Player) =        
-        match player with
-        | Player1 -> Player2
-        | Player2 -> Player1
+        { GamesWonPlayer1 = 0; GamesWonPlayer2 = 0 }
 
     let private getCurrentSet gameState = 
         gameState.Sets.Head
@@ -46,59 +31,76 @@ module TennisGame =
     let private getPreviousSets gameState =
         gameState.Sets.Tail
 
-    let private getGamesWonInSet player set =
-        set.Games.[player]        
-
     let private incrementGamesWonInSet player set =
-        let otherPlayer              = getOtherPlayer player
-        let playerGamesWonInSet      = getGamesWonInSet player set
-        let otherPlayerGamesWonInSet = getGamesWonInSet otherPlayer set
-        { Games = Seq.asMap [(player,playerGamesWonInSet+1);(otherPlayer,otherPlayerGamesWonInSet)] }
+        match player with
+            | Player1 -> { GamesWonPlayer1 = set.GamesWonPlayer1 + 1; GamesWonPlayer2 = set.GamesWonPlayer2     }
+            | Player2 -> { GamesWonPlayer1 = set.GamesWonPlayer1;     GamesWonPlayer2 = set.GamesWonPlayer2 + 1 }        
         
     let private winGame player gameState =
         let updatedSet = 
-            getCurrentSet gameState
+            gameState
+            |> getCurrentSet 
             |> incrementGamesWonInSet player
 
         let previousSets = getPreviousSets gameState
         match updatedSet.Winner with
-        | Some(player) -> { Sets = [startNewSet;updatedSet] @ previousSets; CurrentGame = startNewGame }
-        | None         -> { Sets = [updatedSet]             @ previousSets; CurrentGame = startNewGame }  
+            | Some(player) -> { Sets = [startNewSet;updatedSet] @ previousSets; CurrentGame = ZeroZero }
+            | None         -> { Sets = [updatedSet]             @ previousSets; CurrentGame = ZeroZero }  
 
     let scorePointFor player gameState =
-        let pointsInCurrentGame = gameState.CurrentGame
-        let otherPlayer         = getOtherPlayer player
-        let scoreForPlayer      = pointsInCurrentGame.[player]
-        let scoreForOtherPlayer = pointsInCurrentGame.[otherPlayer]
+        let scoreInCurrentGame = gameState.CurrentGame
 
-        let (scorePlayer,scoreOtherPlayer,gameWinner) =
-            match scoreForPlayer,scoreForOtherPlayer with
-                | Zero,otherScore    -> Fifteen,otherScore,None
-                | Fifteen,otherScore -> Thirty,otherScore,None
-                | Thirty,otherScore  -> 
-                    match otherScore with
-                        | Zero
-                        | Fifteen
-                        | Thirty -> Forty,otherScore,None
-                        | Forty  -> Deuce,Deuce,None
-                        | _      -> invalidOp "Unexpected game state"
-                | Forty,otherScore ->
-                    match otherScore with
-                        | Zero
-                        | Fifteen
-                        | Thirty    -> Forty,otherScore,Some(player)
-                        | Advantage -> Deuce,Deuce,None
-                        | _         -> invalidOp "Unexpected game state"
-                | Deuce,Deuce     -> Advantage,Forty,None
-                | Deuce,_         -> invalidOp "Unexpected game state"
-                | Advantage,Forty -> Advantage,Forty,Some(player)
-                | _,_             -> invalidOp "Unexpected game state"
+        let (updatedScoreInCurrentGame,gameWinner) =
+            match player with
+                | Player1 ->
+                    match scoreInCurrentGame with
+                        | FortyZero        
+                        | FortyFifteen     
+                        | FortyThirty    
+                        | AdvantagePlayer1 -> ZeroZero,Some(Player1)
+
+                        | ThirtyForty     
+                        | AdvantagePlayer2 -> Deuce,None
+
+                        | ZeroZero         -> FifteenZero,None
+                        | FifteenZero      -> ThirtyZero,None
+                        | ThirtyZero       -> FortyZero,None
+                        | ZeroFifteen      -> FifteenFifteen,None
+                        | FifteenFifteen   -> ThirtyFifteen,None
+                        | ThirtyFifteen    -> FortyFifteen,None                        
+                        | ZeroThirty       -> FifteenThirty,None
+                        | FifteenThirty    -> ThirtyThirty,None
+                        | ThirtyThirty     -> FortyThirty,None                          
+                        | ZeroForty        -> FifteenForty,None
+                        | FifteenForty     -> ThirtyForty,None
+                        | Deuce            -> AdvantagePlayer1,None
+                | Player2 ->
+                    match scoreInCurrentGame with
+                        | ZeroForty        
+                        | FifteenForty     
+                        | ThirtyForty    
+                        | AdvantagePlayer2 -> ZeroZero,Some(Player2)
+
+                        | FortyThirty     
+                        | AdvantagePlayer1 -> Deuce,None
+
+                        | ZeroZero         -> ZeroFifteen,None
+                        | FifteenZero      -> FifteenFifteen,None
+                        | ThirtyZero       -> ThirtyFifteen,None
+                        | ZeroFifteen      -> ZeroThirty,None
+                        | FifteenFifteen   -> FifteenThirty,None
+                        | ThirtyFifteen    -> ThirtyThirty,None                        
+                        | ZeroThirty       -> ZeroForty,None
+                        | FifteenThirty    -> FifteenForty,None
+                        | ThirtyThirty     -> ThirtyForty,None                          
+                        | FortyZero        -> FortyFifteen,None
+                        | FortyFifteen     -> FortyThirty,None
+                        | Deuce            -> AdvantagePlayer2,None    
+                       
 
         match gameWinner with
-        | Some(winner) -> 
-            winGame winner gameState            
-        | None ->
-            { Sets = gameState.Sets; CurrentGame = (Seq.asMap [(player,scorePlayer);(otherPlayer,scoreOtherPlayer)]) }
+            | Some(winner) -> winGame winner gameState            
+            | None         -> { Sets = gameState.Sets; CurrentGame = updatedScoreInCurrentGame }
 
     let startNewTennisGame =
-        { Sets = [startNewSet]; CurrentGame = startNewGame }      
+        { Sets = [startNewSet]; CurrentGame = ZeroZero }      
